@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pre-hire Evidence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f1f1f1; --surface:#ffffff; --line:#d2d2d2; --line-soft:#e7e7e7;
+  --ink:#0d0d0d; --ink-2:#565656; --ink-3:#8a8a8a; --accent-soft:#e9e9e9;
+  --radius:10px; --gutter:16px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0b0b0b; --surface:#161616; --line:#343434; --line-soft:#232323;
+    --ink:#f4f4f4; --ink-2:#a6a6a6; --ink-3:#737373; --accent-soft:#232323;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0b0b0b; --surface:#161616; --line:#343434; --line-soft:#232323;
+  --ink:#f4f4f4; --ink-2:#a6a6a6; --ink-3:#737373; --accent-soft:#232323;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);
+  font:400 16px/1.5 "Public Sans",system-ui,-apple-system,sans-serif;
+  padding:0 max(var(--gutter),env(safe-area-inset-left)) calc(32px + env(safe-area-inset-bottom)) max(var(--gutter),env(safe-area-inset-right));
+  overflow-x:hidden}
+.wrap{max-width:1000px;margin:0 auto}
+header{padding:26px 0 8px}
+h1{font:700 29px/1.08 "Barlow Condensed",sans-serif;letter-spacing:.01em;text-transform:uppercase;margin:0 0 6px}
+.meta{color:var(--ink-2);font-size:14px;margin:0}
+.meta b{color:var(--ink);font-family:"IBM Plex Mono",monospace;font-weight:500}
+
+.flag{border-radius:9px;padding:12px 13px 12px 15px;font-size:14px;line-height:1.5;margin:14px 0;
+  border:1px solid var(--line);border-left:4px solid var(--ink);background:var(--surface)}
+.flag.warn{background-image:repeating-linear-gradient(135deg,var(--accent-soft) 0 7px,transparent 7px 14px)}
+.flag.bad{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+
+.slide{margin:22px 0 0}
+.slide h2{font:600 12px/1.3 "Public Sans",sans-serif;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink-3);margin:0 0 11px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+figure{margin:0;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+figure img{display:block;width:100%;height:150px;object-fit:cover;background:var(--line-soft);cursor:zoom-in}
+figcaption{padding:9px 10px;font-size:12.5px;line-height:1.35;color:var(--ink-2)}
+figcaption b{color:var(--ink);font-weight:600;display:block}
+
+#lb{position:fixed;inset:0;background:rgba(0,0,0,.93);display:none;align-items:center;
+  justify-content:center;z-index:50;padding:16px;cursor:zoom-out}
+#lb img{max-width:100%;max-height:84vh;object-fit:contain}
+#lb .cap{position:absolute;bottom:18px;left:0;right:0;text-align:center;color:#fff;font-size:14px}
+footer{color:var(--ink-3);font-size:12px;text-align:center;padding:26px 0 0;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Pre-hire Evidence</h1>
+    <p class="meta" id="meta">Loading…</p>
+  </header>
+  <div id="out"></div>
+  <footer id="foot"></footer>
+</div>
+<div id="lb"><img alt=""><div class="cap"></div></div>
+
+<script>
+(function(){
+  // See the note in the form: staging owns the "dev-" webhook paths,
+  // production owns the clean ones. make_pages.py rewrites this line to "".
+  var HOOK = "dev-";
+  var ENDPOINT = "https://n8n.wakacampa.com/webhook/" + HOOK + "prehire-evidence";
+  function $(id){ return document.getElementById(id); }
+  function el(t,c,h){ var e=document.createElement(t); if(c)e.className=c; if(h!==undefined)e.innerHTML=h; return e; }
+
+  var q = new URLSearchParams(location.search);
+  var JOB = q.get("job_id") || q.get("job") || "";
+  var FLEET = q.get("fleet") || "";
+  var EXP = q.get("exp") || "", TOK = q.get("t") || "";
+
+  function fail(msg, help){
+    $("meta").textContent = "";
+    $("out").innerHTML = '<div class="flag bad"><strong>'+msg+'</strong>'+(help?"<br>"+help:"")+'</div>';
+  }
+
+  if (!JOB || !TOK){ fail("This link is incomplete.", "Open it from the grooming task in GoHighLevel."); return; }
+
+  fetch(ENDPOINT, {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({ job_id: JOB, fleet: FLEET, exp: EXP, t: TOK })
+  }).then(function(r){ return r.json(); }).then(function(d){
+    if (d && d.refused){ fail("Refused. " + d.reason, d.help); return; }
+    if (!d || !d.ok){ fail("Could not read that job.", (d && (d.problems||[])[0]) || ""); return; }
+
+    var when = d.createdAt ? new Date(d.createdAt).toLocaleString() : "";
+    $("meta").innerHTML = (d.name ? d.name + " &middot; " : "") +
+      (d.fleet ? "<b>"+d.fleet+"</b> &middot; " : "") +
+      d.count + " photo" + (d.count===1?"":"s") + (when ? " &middot; " + when : "");
+
+    if (!d.count){
+      $("out").innerHTML = '<div class="flag warn"><strong>No photos filed yet.</strong> '+
+        'The groomer may still be working, or submitted without evidence.</div>';
+      return;
+    }
+
+    // Group by slide so the page walks the van in the same order the spec does.
+    var groups = [], seen = {};
+    d.shots.forEach(function(s){
+      if (!seen[s.slide]){ seen[s.slide] = { slide:s.slide, shots:[] }; groups.push(seen[s.slide]); }
+      seen[s.slide].shots.push(s);
+    });
+
+    var out = $("out");
+    groups.forEach(function(g){
+      var sec = el("div","slide");
+      sec.appendChild(el("h2", null, g.slide + " &middot; " + g.shots.length +
+                         " shot" + (g.shots.length===1?"":"s")));
+      var grid = el("div","grid");
+      g.shots.forEach(function(s){
+        var fig = el("figure");
+        var im = el("img"); im.src = s.url; im.alt = s.slot; im.loading = "lazy";
+        im.addEventListener("click", function(){ open(s.url, s.slot); });
+        fig.appendChild(im);
+        fig.appendChild(el("figcaption", null, "<b>"+s.label+"</b>"+s.slide));
+        grid.appendChild(fig);
+      });
+      sec.appendChild(grid);
+      out.appendChild(sec);
+    });
+
+    $("foot").innerHTML = "This link expires. If it stops working, ask for a new one from the job.";
+  }).catch(function(e){
+    fail("Could not reach the server.", e && e.message ? e.message : "");
+  });
+
+  function open(url, caption){
+    var lb = $("lb");
+    lb.querySelector("img").src = url;
+    lb.querySelector(".cap").textContent = caption;
+    lb.style.display = "flex";
+  }
+  $("lb").addEventListener("click", function(){ this.style.display = "none"; });
+  document.addEventListener("keydown", function(e){
+    if (e.key === "Escape") $("lb").style.display = "none";
+  });
+})();
+</script>
+</body>
+</html>

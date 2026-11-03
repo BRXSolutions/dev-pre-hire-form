@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Grooming Jobs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+/* Monochrome, same system as the pre-hire form. State is carried by structure
+   -- a solid rule, a hatched field, a full inversion -- never by hue, so it
+   survives a cracked depot screen and colour-blindness alike. */
+:root{
+  --bg:#f1f1f1; --surface:#ffffff; --line:#d2d2d2; --line-soft:#e7e7e7;
+  --ink:#0d0d0d; --ink-2:#565656; --ink-3:#8a8a8a;
+  --accent:#0d0d0d; --accent-ink:#ffffff; --accent-soft:#e9e9e9;
+  --radius:10px; --gutter:16px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0b0b0b; --surface:#161616; --line:#343434; --line-soft:#232323;
+    --ink:#f4f4f4; --ink-2:#a6a6a6; --ink-3:#737373;
+    --accent:#f4f4f4; --accent-ink:#0b0b0b; --accent-soft:#232323;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0b0b0b; --surface:#161616; --line:#343434; --line-soft:#232323;
+  --ink:#f4f4f4; --ink-2:#a6a6a6; --ink-3:#737373;
+  --accent:#f4f4f4; --accent-ink:#0b0b0b; --accent-soft:#232323;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);
+  font:400 16px/1.5 "Public Sans",system-ui,-apple-system,sans-serif;
+  -webkit-text-size-adjust:100%;
+  padding:0 max(var(--gutter),env(safe-area-inset-left)) calc(40px + env(safe-area-inset-bottom)) max(var(--gutter),env(safe-area-inset-right));
+  overflow-x:hidden}
+.wrap{max-width:720px;margin:0 auto}
+header{padding:26px 0 14px;display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+h1{font:700 30px/1.08 "Barlow Condensed",sans-serif;letter-spacing:.01em;text-transform:uppercase;margin:0 0 4px}
+.sub{color:var(--ink-2);font-size:14px;margin:0}
+.who{font-size:13px;color:var(--ink-3);text-align:right;flex:none}
+.who b{display:block;color:var(--ink);font-weight:600}
+.who button{background:none;border:0;color:var(--ink-2);font:inherit;font-size:12.5px;
+  text-decoration:underline;cursor:pointer;padding:2px 0 0}
+
+.banner{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--ink);
+  border-radius:9px;padding:11px 13px;font-size:13px;line-height:1.45;margin:0 0 18px}
+
+section{background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--radius);padding:18px 16px;margin:0 0 13px}
+label.q{display:block;font-weight:500;font-size:14.5px;margin:0 0 6px}
+.hint{color:var(--ink-3);font-size:12.5px;margin:-1px 0 9px;line-height:1.4}
+input[type=text],input[type=email]{width:100%;padding:12px;font:inherit;font-size:16px;
+  color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;outline:none}
+input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+#code{font:500 22px/1 "IBM Plex Mono",ui-monospace,monospace;letter-spacing:7px;text-align:center}
+button.go{width:100%;margin-top:12px;padding:13px 22px;font:600 15px/1 "Public Sans",sans-serif;
+  color:var(--accent-ink);background:var(--accent);border:0;border-radius:9px;cursor:pointer}
+button.go:disabled{opacity:.45;cursor:not-allowed}
+button.link{background:none;border:0;color:var(--ink-2);font:inherit;font-size:13px;
+  text-decoration:underline;cursor:pointer;padding:10px 0 0;display:block;margin:0 auto}
+
+.flag{border-radius:9px;padding:12px 13px 12px 15px;font-size:14px;line-height:1.5;margin:0 0 12px;
+  border:1px solid var(--line);border-left:4px solid var(--ink);background:var(--surface)}
+.flag.warn{background-image:repeating-linear-gradient(135deg,var(--accent-soft) 0 7px,transparent 7px 14px)}
+.flag.bad{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+
+/* --- job cards --- */
+.job{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  padding:15px 16px;margin:0 0 12px}
+.job.due{border-left:4px solid var(--ink)}
+.job .top{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.fleet{font:700 26px/1 "Barlow Condensed",sans-serif;letter-spacing:.02em;text-transform:uppercase}
+.stage{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);
+  border:1px solid var(--line);border-radius:999px;padding:4px 10px;white-space:nowrap}
+.stage.now{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.model{color:var(--ink-2);font-size:13.5px;margin:4px 0 0}
+.rows{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px 18px;margin:13px 0 0;
+  padding-top:12px;border-top:1px solid var(--line-soft)}
+.k{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);margin:0 0 2px}
+.v{font:500 14.5px/1.25 "IBM Plex Mono",ui-monospace,monospace;color:var(--ink);word-break:break-word}
+.v.soft{font-family:"Public Sans",sans-serif;color:var(--ink-3);font-weight:400}
+.overdue{font-weight:700}
+.acts{display:flex;gap:9px;margin:14px 0 0;flex-wrap:wrap}
+.acts a{flex:1 1 140px;text-align:center;text-decoration:none;padding:12px 10px;border-radius:9px;
+  font:600 14.5px/1 "Public Sans",sans-serif}
+.acts a.primary{background:var(--accent);color:var(--accent-ink)}
+.acts a.second{background:var(--bg);color:var(--ink);border:1px solid var(--line)}
+footer{color:var(--ink-3);font-size:12px;text-align:center;padding:22px 0 0;line-height:1.5}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div>
+    <h1>Grooming Jobs</h1>
+    <p class="sub" id="sub">Sign in to see the vans assigned to you.</p>
+  </div>
+  <div class="who hidden" id="who"></div>
+</header>
+
+<div class="banner hidden" id="banner"></div>
+<div id="msg"></div>
+
+<section id="stepEmail">
+  <label class="q" for="email">Your email address</label>
+  <p class="hint">Use the address Waka Campa has on file for you. We will send you a 6-digit code.</p>
+  <input type="email" id="email" autocomplete="email" inputmode="email" placeholder="you@example.com">
+  <button class="go" id="sendCode" type="button">Send me a code</button>
+</section>
+
+<section id="stepCode" class="hidden">
+  <label class="q" for="code">Enter the 6-digit code</label>
+  <p class="hint" id="codeHint">Check your email. The code expires in 10 minutes.</p>
+  <input type="text" id="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000">
+  <button class="go" id="verify" type="button">Sign in</button>
+  <button class="link" id="startOver" type="button">Use a different email</button>
+</section>
+
+<div id="jobs"></div>
+
+<footer id="foot"></footer>
+</div>
+
+<script>
+(function(){
+  // Which pair of n8n workflows this copy talks to. Staging owns the "dev-"
+  // paths, production the clean ones. make_pages.py rewrites this one line.
+  var HOOK = "dev-";
+  var ENDPOINT = "https://n8n.wakacampa.com/webhook/" + HOOK + "groomer-api";
+  var TOKEN_KEY = "groomer:token";
+
+  function $(id){ return document.getElementById(id); }
+  function el(t,c,h){ var e=document.createElement(t); if(c)e.className=c; if(h!==undefined)e.innerHTML=h; return e; }
+  function show(id,on){ $(id).classList[on?"remove":"add"]("hidden"); }
+  function esc(s){ return String(s==null?"":s).replace(/[<>&"]/g, function(c){
+    return {"<":"&lt;",">":"&gt;","&":"&amp;",'"':"&quot;"}[c]; }); }
+
+  if (HOOK){
+    $("banner").classList.remove("hidden");
+    $("banner").innerHTML = "<strong>Staging.</strong> These are test jobs, not real work.";
+  }
+
+  // Token is a per-viewer convenience only. Storage can be absent or throw in
+  // a private window or with site data blocked, so every call is wrapped and
+  // the page works identically without it -- you just sign in again.
+  function readToken(){ try { return localStorage.getItem(TOKEN_KEY) || ""; } catch(e){ return ""; } }
+  function writeToken(t){ try { localStorage.setItem(TOKEN_KEY, t); } catch(e){} }
+  function dropToken(){ try { localStorage.removeItem(TOKEN_KEY); } catch(e){} }
+
+  var token = readToken();
+  var email = "";
+
+  function api(body){
+    var h = { "Content-Type": "application/json" };
+    if (token) h["Authorization"] = "Bearer " + token;
+    return fetch(ENDPOINT, { method:"POST", headers:h, body: JSON.stringify(body) })
+      .then(function(r){ return r.json().then(function(d){ d.__http = r.status; return d; }); });
+  }
+
+  function note(kind, html){ $("msg").innerHTML = '<div class="flag '+kind+'">'+html+'</div>'; }
+  function clearNote(){ $("msg").innerHTML = ""; }
+
+  // ---- step 1: ask for a code --------------------------------------------
+  function sendCode(){
+    var v = $("email").value.trim().toLowerCase();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)){
+      note("warn","Enter a valid email address."); return;
+    }
+    email = v;
+    var b = $("sendCode"); b.disabled = true; b.textContent = "Sending…";
+    clearNote();
+    api({ method:"login.request", email: email }).then(function(d){
+      b.disabled = false; b.textContent = "Send me a code";
+      if (d.status !== "OK"){ note("warn", esc(d.error || "Could not send a code.")); return; }
+      // Deliberately the same answer whether or not the email is on file.
+      show("stepEmail", false); show("stepCode", true);
+      $("codeHint").innerHTML = "We sent a code to <b>"+esc(email)+"</b> if that address is on file. It expires in 10 minutes.";
+      $("code").focus();
+    }).catch(function(e){
+      b.disabled = false; b.textContent = "Send me a code";
+      note("bad","Could not reach the server. "+esc(e && e.message));
+    });
+  }
+
+  // ---- step 2: swap the code for a token ---------------------------------
+  function verify(){
+    var c = $("code").value.replace(/\D/g,"");
+    if (c.length !== 6){ note("warn","The code is 6 digits."); return; }
+    var b = $("verify"); b.disabled = true; b.textContent = "Checking…";
+    clearNote();
+    api({ method:"login.verify", email: email, code: c }).then(function(d){
+      b.disabled = false; b.textContent = "Sign in";
+      if (d.status !== "OK"){ note("warn", esc(d.error || "That did not work.")); return; }
+      token = d.results[0].token;
+      writeToken(token);
+      signedIn(d.results[0].user);
+      loadJobs();
+    }).catch(function(e){
+      b.disabled = false; b.textContent = "Sign in";
+      note("bad","Could not reach the server. "+esc(e && e.message));
+    });
+  }
+
+  function signedIn(user){
+    show("stepEmail", false); show("stepCode", false);
+    $("sub").textContent = "The vans assigned to you.";
+    var w = $("who"); w.classList.remove("hidden");
+    w.innerHTML = "<b>"+esc(user && user.name || "")+"</b>"+esc(user && user.email || "");
+    var out = el("button", null, "Sign out");
+    out.type = "button";
+    out.addEventListener("click", function(){
+      dropToken(); token = ""; location.reload();
+    });
+    w.appendChild(out);
+  }
+
+  function signedOut(){
+    dropToken(); token = "";
+    $("who").classList.add("hidden");
+    $("jobs").innerHTML = "";
+    $("foot").innerHTML = "";
+    $("sub").textContent = "Sign in to see the vans assigned to you.";
+    show("stepEmail", true); show("stepCode", false);
+  }
+
+  // ---- step 3: the jobs ---------------------------------------------------
+  function today(){ return new Date().toISOString().slice(0,10); }
+
+  function card(j){
+    var overdue = j.prehireDue && j.prehireDue < today();
+    var d = el("div","job" + (overdue ? " due" : ""));
+
+    var top = el("div","top");
+    top.appendChild(el("div","fleet", esc(j.fleet)));
+    top.appendChild(el("div","stage" + (j.stage === "Grooming Required" ? " now" : ""), esc(j.stage)));
+    d.appendChild(top);
+
+    if (j.model) d.appendChild(el("p","model", esc(j.model)));
+    else if (j.name) d.appendChild(el("p","model", esc(j.name)));
+
+    var rows = el("div","rows");
+    function row(k, v, cls){
+      var c = el("div");
+      c.appendChild(el("p","k", k));
+      c.appendChild(el("p","v" + (cls || ""), v));
+      rows.appendChild(c);
+    }
+    row("Drop-off", esc(j.dropoffLocation) || "<span class='v soft'>not set</span>");
+    row("Form due", j.prehireDue
+      ? (overdue ? '<span class="overdue">'+esc(j.prehireDue)+' — overdue</span>' : esc(j.prehireDue))
+      : "<span class='v soft'>not set</span>");
+    row("Next pick-up", esc(j.nextPickup) || "<span class='v soft'>not set</span>");
+    row("Next hire needs", esc([
+      j.bedding ? j.bedding + " bedding set" + (j.bedding === "1" ? "" : "s") : "",
+      (j.seats && j.seats.toLowerCase() !== "none") ? j.seats : ""
+    ].filter(Boolean).join(" · ")) || "<span class='v soft'>nothing extra</span>");
+    d.appendChild(rows);
+
+    var acts = el("div","acts");
+    var a = el("a","primary","Pre-hire checks"); a.href = j.formA; a.target = "_blank"; a.rel = "noopener";
+    var b = el("a","second","Exterior wash");   b.href = j.formB; b.target = "_blank"; b.rel = "noopener";
+    acts.appendChild(a); acts.appendChild(b);
+    d.appendChild(acts);
+    return d;
+  }
+
+  function loadJobs(){
+    $("jobs").innerHTML = '<section>Loading your jobs…</section>';
+    api({ method:"jobs" }).then(function(d){
+      if (d.__http === 401 || d.code === "AUTH"){
+        signedOut();
+        note("warn","Your session has expired. Please sign in again.");
+        return;
+      }
+      if (d.status !== "OK"){
+        $("jobs").innerHTML = "";
+        note("bad", esc(d.error || "Could not load your jobs.")); return;
+      }
+      clearNote();
+      if (d.user) signedIn(d.user);
+      var jobs = d.results || [];
+      var box = $("jobs"); box.innerHTML = "";
+      if (!jobs.length){
+        box.innerHTML = '<div class="flag warn"><strong>No jobs assigned to you right now.</strong> '+
+          'When a van is dropped off and allocated to you, it will appear here.</div>';
+      } else {
+        jobs.forEach(function(j){ box.appendChild(card(j)); });
+      }
+      $("foot").innerHTML = jobs.length
+        ? jobs.length + " job" + (jobs.length===1?"":"s") +
+          " · completed and closed jobs are not shown<br>Signed in for 12 hours."
+        : "";
+    }).catch(function(e){
+      $("jobs").innerHTML = "";
+      note("bad","Could not reach the server. "+esc(e && e.message));
+    });
+  }
+
+  // ---- wire up ------------------------------------------------------------
+  $("sendCode").addEventListener("click", sendCode);
+  $("verify").addEventListener("click", verify);
+  $("startOver").addEventListener("click", function(){
+    show("stepCode", false); show("stepEmail", true); clearNote(); $("email").focus();
+  });
+  $("email").addEventListener("keydown", function(e){ if (e.key === "Enter") sendCode(); });
+  $("code").addEventListener("keydown", function(e){ if (e.key === "Enter") verify(); });
+
+  // A stored token means we can go straight to the jobs. If it has expired the
+  // jobs call says so and drops us back to the email step.
+  if (token) loadJobs();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,918 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pre-hire Checks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+/* Monochrome. Brand is black and white, so state cannot be carried by hue.
+   Done / caution / refused are told apart by structure instead: a solid rule,
+   a hatched field, and a full inversion. That is redundant encoding, which is
+   better practice anyway - it survives a photocopy, a cracked depot screen and
+   colour-blindness. */
+:root{
+  --bg:#f1f1f1; --surface:#ffffff; --line:#d2d2d2; --line-soft:#e7e7e7;
+  --ink:#0d0d0d; --ink-2:#565656; --ink-3:#8a8a8a;
+  --accent:#0d0d0d; --accent-ink:#ffffff; --accent-soft:#e9e9e9;
+  --warn:#0d0d0d; --warn-bg:#ffffff; --warn-line:#0d0d0d;
+  --bad:#0d0d0d; --bad-bg:#ffffff; --bad-line:#0d0d0d;
+  --ok:#0d0d0d; --ok-bg:#ffffff;
+  --radius:10px; --gutter:16px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0b0b0b; --surface:#161616; --line:#343434; --line-soft:#232323;
+    --ink:#f4f4f4; --ink-2:#a6a6a6; --ink-3:#737373;
+    --accent:#f4f4f4; --accent-ink:#0b0b0b; --accent-soft:#232323;
+    --warn:#f4f4f4; --warn-bg:#161616; --warn-line:#f4f4f4;
+    --bad:#f4f4f4; --bad-bg:#161616; --bad-line:#f4f4f4;
+    --ok:#f4f4f4; --ok-bg:#161616;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0b0b0b; --surface:#161616; --line:#343434; --line-soft:#232323;
+  --ink:#f4f4f4; --ink-2:#a6a6a6; --ink-3:#737373;
+  --accent:#f4f4f4; --accent-ink:#0b0b0b; --accent-soft:#232323;
+  --warn:#f4f4f4; --warn-bg:#161616; --warn-line:#f4f4f4;
+  --bad:#f4f4f4; --bad-bg:#161616; --bad-line:#f4f4f4;
+  --ok:#f4f4f4; --ok-bg:#161616;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--ink);
+  font:400 16px/1.5 "Public Sans",system-ui,-apple-system,sans-serif;
+  -webkit-text-size-adjust:100%;
+  padding:0 max(var(--gutter),env(safe-area-inset-left)) calc(96px + env(safe-area-inset-bottom)) max(var(--gutter),env(safe-area-inset-right));
+  overflow-x:hidden;
+}
+.wrap{max-width:720px;margin:0 auto}
+header{padding:26px 0 14px}
+h1{font:700 30px/1.08 "Barlow Condensed",sans-serif;letter-spacing:.01em;text-transform:uppercase;margin:0 0 6px}
+.sub{color:var(--ink-2);font-size:14px;margin:0}
+
+.banner{background:var(--warn-bg);border:1px solid var(--warn-line);color:var(--warn);
+  border-radius:var(--radius);padding:11px 13px;font-size:13px;line-height:1.45;margin:0 0 18px}
+
+.jobcard{background:var(--accent-soft);border:1px solid var(--line);
+  border-radius:var(--radius);padding:13px 15px;margin:0 0 10px}
+.jobcard .row{display:flex;gap:18px;flex-wrap:wrap}
+.jobcard .k{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);margin:0 0 2px}
+.jobcard .v{font:500 15px/1.2 "IBM Plex Mono",ui-monospace,monospace;color:var(--ink)}
+.nexthire{margin:11px 0 0;padding-top:10px;border-top:1px solid var(--line);font-size:13.5px;color:var(--ink-2)}
+.nexthire b{color:var(--ink)}
+
+section{background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--radius);padding:17px 16px;margin:0 0 13px}
+section>h2{font:600 12px/1.3 "Public Sans",sans-serif;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink-3);margin:0 0 14px;padding-bottom:9px;border-bottom:1px solid var(--line-soft)}
+section>h2 .n{color:var(--accent);font-weight:700}
+.f{margin:0 0 15px}
+.f:last-child{margin-bottom:0}
+label.q{display:block;font-weight:500;font-size:14.5px;margin:0 0 6px}
+.hint{color:var(--ink-3);font-size:12.5px;margin:-1px 0 7px;line-height:1.4}
+.hint.strong{color:var(--warn)}
+input[type=text],input[type=number],textarea,select{width:100%;padding:11px 12px;font:inherit;font-size:16px;
+  color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;outline:none}
+input:focus,textarea:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+textarea{min-height:74px;resize:vertical}
+
+.yn{display:flex;gap:8px}
+.yn label{flex:1;margin:0;display:flex;align-items:center;justify-content:center;gap:7px;
+  padding:11px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);cursor:pointer;font-size:15px}
+.yn input{accent-color:var(--accent);margin:0;width:auto}
+.yn label:has(input:checked){border-color:var(--accent);background:var(--accent-soft);font-weight:600}
+
+.tick{display:flex;align-items:flex-start;gap:9px;padding:9px 10px;border:1px solid var(--line);
+  border-radius:8px;background:var(--bg);margin:0 0 7px;cursor:pointer;font-size:14.5px;font-weight:400}
+.tick input{accent-color:var(--accent);margin:2px 0 0;width:auto;flex:none}
+.tick:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+
+.shots{display:grid;grid-template-columns:repeat(auto-fill,minmax(146px,1fr));gap:10px}
+.shot{position:relative;border:1px dashed var(--line);border-radius:9px;background:var(--bg);
+  overflow:hidden;min-height:112px;display:flex;flex-direction:column;cursor:pointer}
+.shot.done{border-style:solid;border-color:var(--ink);border-width:2px}
+.shot.done::after{content:"\2713";position:absolute;bottom:7px;right:7px;
+  width:19px;height:19px;border-radius:50%;background:var(--ink);color:var(--surface);
+  font:700 11px/19px "Public Sans",sans-serif;text-align:center}
+.shot.failed{border-style:solid;border-color:var(--ink);border-width:2px;
+  background-image:repeating-linear-gradient(135deg,
+    var(--accent-soft) 0 7px, transparent 7px 14px)}
+.shot.failed .cap{background:var(--ink);color:var(--surface);font-weight:600}
+.shot input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
+.shot .thumb{width:100%;height:74px;object-fit:cover;display:block;background:var(--line-soft)}
+.shot .cap{padding:7px 8px;font-size:11.5px;line-height:1.3;color:var(--ink-2);min-height:38px;display:flex;align-items:center}
+.shot.done .cap{color:var(--ink);font-weight:600;padding-right:30px}
+.shot .ph{flex:1;display:flex;align-items:center;justify-content:center;color:var(--ink-3);font-size:22px}
+.shot .sz{position:absolute;top:5px;right:5px;background:rgba(0,0,0,.62);color:#fff;
+  font:500 10px/1 "IBM Plex Mono",monospace;padding:3px 5px;border-radius:4px}
+.shot .vid{position:absolute;top:5px;left:5px;background:var(--accent);color:var(--accent-ink);
+  font:600 9px/1 "Public Sans",sans-serif;padding:3px 5px;border-radius:4px;letter-spacing:.04em}
+.req{color:var(--ink);font-weight:700}
+
+#sigwrap{border:1px solid var(--line);border-radius:8px;background:var(--bg);overflow:hidden}
+#sig{display:block;width:100%;height:150px;touch-action:none}
+.sigbar{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;
+  border-top:1px solid var(--line-soft);font-size:12.5px;color:var(--ink-3)}
+.sigbar button{background:none;border:0;color:var(--accent);font:inherit;font-weight:600;cursor:pointer;padding:0}
+
+.footbar{position:fixed;left:0;right:0;bottom:0;background:var(--surface);
+  border-top:1px solid var(--line);padding:10px max(var(--gutter),env(safe-area-inset-left))
+  calc(10px + env(safe-area-inset-bottom)) max(var(--gutter),env(safe-area-inset-right));z-index:20}
+.footbar .inner{max-width:720px;margin:0 auto;display:flex;gap:12px;align-items:center}
+.progress{flex:1;min-width:0}
+.progress .lbl{font-size:12px;color:var(--ink-2);margin:0 0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar{height:5px;background:var(--line-soft);border-radius:3px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .25s}
+button.go{flex:none;padding:13px 22px;font:600 15px/1 "Public Sans",sans-serif;color:var(--accent-ink);
+  background:var(--accent);border:0;border-radius:9px;cursor:pointer}
+button.go:disabled{opacity:.45;cursor:not-allowed}
+
+/* Three states, told apart without colour:
+   ok      - plain field, solid rule down the left
+   warn    - hatched field, so caution reads at a glance
+   refused - fully inverted, impossible to mistake for the other two */
+.flag{border-radius:9px;padding:12px 13px 12px 15px;font-size:14px;line-height:1.5;
+  margin:0 0 10px;border:1px solid var(--line);border-left:4px solid var(--ink);
+  background:var(--surface);color:var(--ink)}
+.flag.ok{background:var(--surface)}
+.flag.warn{
+  background-image:repeating-linear-gradient(135deg,
+    var(--accent-soft) 0 7px, transparent 7px 14px);
+}
+.flag.bad{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.flag.bad a,.flag.bad strong{color:var(--surface)}
+.tasklist{margin:8px 0 0;padding-left:19px}
+.tasklist li{margin:4px 0;font-size:14px}
+a{color:var(--accent)}
+footer{color:var(--ink-3);font-size:12px;text-align:center;padding:20px 0 0;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Pre-hire Checks</h1>
+  <p class="sub">Form A &mdash; checks and interior. Due 24 hours after drop-off.</p>
+</header>
+
+<div class="banner" id="banner" style="display:none"></div>
+
+<div class="jobcard">
+  <div class="row">
+    <div><p class="k">Fleet</p><p class="v" id="jcFleet">&mdash;</p></div>
+    <div><p class="k">Model</p><p class="v" id="jcModel">&mdash;</p></div>
+    <div><p class="k">Job</p><p class="v" id="jcJob">&mdash;</p></div>
+  </div>
+  <div class="nexthire" id="jcNext"></div>
+</div>
+
+<form id="f"></form>
+<div id="result" style="margin-top:14px"></div>
+
+<footer>
+  Photos are resized on your phone before upload, so this works on depot wifi.<br>
+  Read the house battery voltage <strong>before</strong> plugging into 230V.
+</footer>
+</div>
+
+<div class="footbar">
+  <div class="inner">
+    <div class="progress">
+      <p class="lbl" id="pcount">0 / 0 required photos</p>
+      <span class="bar"><i id="pbar"></i></span>
+    </div>
+    <button class="go" id="submit" type="button">Submit</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  // Which pair of n8n workflows this copy talks to. n8n will not let two
+  // workflows share a webhook path, so staging owns the "dev-" paths and
+  // production owns the clean ones. make_pages.py rewrites this one line to ""
+  // when it builds the GitHub Pages copy, so there is only ever one source
+  // file and one line of difference between the two.
+  var HOOK = "dev-";
+  var HOOK_BASE = "https://n8n.wakacampa.com/webhook/" + HOOK;
+  var PHOTO_ENDPOINT  = HOOK_BASE + "prehire-photo";
+  var SUBMIT_ENDPOINT = HOOK_BASE + "prehire-submission";
+  var MAX_EDGE = 1600, JPEG_Q = 0.72;
+
+  function $(id){ return document.getElementById(id); }
+  function el(tag, cls, html){
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (html !== undefined) e.innerHTML = html;
+    return e;
+  }
+
+  // The staging warning belongs on the staging copy only. A groomer looking at
+  // the real form must never be told their work lands in a test system.
+  if (HOOK){
+    var bn = $("banner");
+    bn.style.display = "";
+    bn.innerHTML = "<strong>Staging.</strong> Everything you submit here lands " +
+                   "in the test system, not the live one.";
+  }
+
+  // ---- the job link -------------------------------------------------------
+  var q = new URLSearchParams(location.search);
+  var JOB = {
+    job_id: q.get("job_id")||"", fleet: q.get("fleet")||"", model: q.get("model")||"",
+    beds: q.get("beds")||"", seats: q.get("seats")||"",
+    exp: q.get("exp")||"", t: q.get("t")||""
+  };
+  var IS_OUTRIDER = /outrider/i.test(JOB.model);
+  var IS_EXPLORER = !IS_OUTRIDER;
+
+  $("jcFleet").textContent = JOB.fleet || "not set";
+  $("jcModel").textContent = JOB.model || "not set";
+  $("jcJob").textContent   = JOB.job_id ? JOB.job_id.slice(-6) : "no link";
+
+  var nh = [];
+  if (JOB.beds)  nh.push("Bedding sets: <b>"+JOB.beds+"</b>");
+  if (JOB.seats) nh.push("Accessories: <b>"+JOB.seats+"</b>");
+  $("jcNext").innerHTML = nh.length
+    ? "Next hire needs &mdash; " + nh.join(" &middot; ")
+    : "<span style='color:var(--ink-3)'>No next-hire details on this link.</span>";
+
+  if (!JOB.t){
+    var w = el("div","flag bad",
+      "<strong>This form was not opened from a job link.</strong> Photos and the "+
+      "submission will be refused. Open it from the link on your grooming job, or ask Ops for a new one.");
+    w.style.margin = "0 0 16px";
+    document.querySelector(".jobcard").insertAdjacentElement("afterend", w);
+  }
+
+  // =========================================================================
+  // THE SPEC. Everything on the page is rendered from this, so adding a slide
+  // or a shot is a data change, not a layout change -- and the model branch
+  // lives in one place instead of being sprinkled through the markup.
+  //
+  // field types: text | num | area | select | yesno | tick | sig
+  // only  : 'Outrider' | 'Explorer'   (slide, field or shot is model-specific)
+  // showIf: [meaning, value]          (reveal when another answer matches)
+  // =========================================================================
+  var SPEC_A = [
+  { id:"A1", title:"Job and operator",
+    fields:[
+      {k:"operator_name", t:"text", q:"Your name", req:true},
+      {k:"grooming_team", t:"select", q:"Grooming team",
+       opts:["Auckland Grooming Team","Christchurch Grooming Team","Queenstown Grooming Team"]},
+      {k:"fleet_number", t:"text", q:"Fleet number",
+       hint:"Filled from the job link. Only type it if you opened this form directly."},
+      {k:"is_this_the_van", t:"yesno", q:"Is this the van on your job?"}
+    ],
+    shots:[{n:"A1 Rear number plate", req:true}] },
+
+  { id:"A2", title:"Exterior condition",
+    fields:[
+      {k:"new_damage", t:"yesno", q:"New damage, dents or scratches?"},
+      {k:"damage_details", t:"area", q:"If yes, describe it", showIf:["new_damage","Yes"],
+       hint:"Where on the van, and how big."},
+      {k:"windscreen_chip", t:"yesno", q:"Windscreen chip or crack?",
+       hint:"A chip raises an urgent task."}
+    ],
+    shots:[
+      {n:"A2 Front", req:true},{n:"A2 Front-left corner", req:true},
+      {n:"A2 Left side", req:true},{n:"A2 Rear-left corner", req:true},
+      {n:"A2 Rear", req:true},{n:"A2 Rear-right corner", req:true},
+      {n:"A2 Right side", req:true},{n:"A2 Front-right corner", req:true},
+      {n:"A2 Damage close-up", showIf:["new_damage","Yes"]},
+      {n:"A2 Chip close-up", showIf:["windscreen_chip","Yes"], hint:"Include a coin for scale."}
+    ],
+    shotHint:"Walk around the van clockwise, starting at the front." },
+
+  { id:"A3", title:"Roof condition",
+    fields:[{k:"roof_ok", t:"tick", q:"Solar panel and roof vent undamaged, vent closed"}],
+    shots:[{n:"A3 Roof front half", req:true},{n:"A3 Roof rear half", req:true}] },
+
+  { id:"A4", title:"Battery and hook-up",
+    fields:[{k:"house_battery_voltage", t:"num", q:"House battery voltage, before plugging in (V)", req:true,
+      hint:"Read the voltmeter FIRST, then plug into 230V. Once it is on mains the reading means nothing. Below 12.2 V raises a task.", strong:true}],
+    shots:[{n:"A4 Voltmeter before plugging in", req:true},
+           {n:"A4 RCD on, charger and fridge points ON", req:true}] },
+
+  { id:"A5", title:"Stripped and checked",
+    fields:[
+      {k:"stripped_ok", t:"tick", q:"All linen and equipment removed"},
+      {k:"lost_property", t:"yesno", q:"Lost property found?"},
+      {k:"pests_found", t:"yesno", q:"Insects or pests found?", hint:"Yes raises an URGENT task.", strong:true}
+    ],
+    shots:[{n:"A5 Lost property items", showIf:["lost_property","Yes"]},
+           {n:"A5 Pests", showIf:["pests_found","Yes"]}] },
+
+  { id:"A6", title:"Cab",
+    fields:[{k:"cab_clean", t:"tick", q:"Dash, console, cup holders, glovebox, door jambs, mats and windows clean; phone holder removed"}],
+    shots:[{n:"A6 Dash and console", req:true},{n:"A6 Footwells and mats", req:true},
+           {n:"A6 Head unit switched on", req:true},
+           {n:"A6 Passenger airbag enabled on screen", req:true, only:"Outrider"}] },
+
+  { id:"A7", title:"Living area",
+    fields:[{k:"living_clean", t:"tick", q:"Floors, walls, ceiling, windows and seats clean"}],
+    shots:[{n:"A7 Wide from rear doors", req:true},{n:"A7 Wide from side door", req:true}] },
+
+  { id:"A8", title:"Sleeping areas, empty",
+    fields:[{k:"mattresses_ok", t:"tick", q:"Mattresses clean and dry"}],
+    shots:[
+      {n:"A8 Upper bed over cab", req:true, only:"Explorer"},
+      {n:"A8 Under lower bed", req:true, only:"Explorer"},
+      {n:"A8 Rear double bed base", req:true, only:"Outrider"},
+      {n:"A8 Garage empty and clean", req:true, only:"Outrider"},
+      {n:"A8 Table bed squabs", req:true, only:"Outrider"}] },
+
+  { id:"A9", title:"Kitchen",
+    fields:[{k:"kitchen_clean", t:"tick", q:"Fridge, stove, sink, benches and cupboards clean"}],
+    shots:[{n:"A9 Inside fridge, door open, switched on", req:true},
+           {n:"A9 Stove both burners lit", req:true, video:true},
+           {n:"A9 Inside cupboards", req:true},
+           {n:"A9 Bin with new bag", req:true}],
+    shotHint:IS_OUTRIDER ? "Outrider: tray boxes on the shelves, stove wing nut tight." : "" },
+
+  { id:"A10", title:"Toilet cassette",
+    fields:[
+      {k:"toilet_cassette_used", t:"yesno", q:"Was the cassette used when it came back?",
+       hint:"If yes, the level-indicator photo is the evidence for the $100 charge. Ops confirms before anything is charged.", strong:true},
+      {k:"cassette_serviced", t:"tick", q:"Emptied, rinsed, treatment added"}
+    ],
+    shots:[{n:"A10 Level indicator before emptying", showIf:["toilet_cassette_used","Yes"]},
+           {n:"A10 Clean cassette with sachet beside it", req:true}] },
+
+  { id:"A11", title:"Toilet and wet room",
+    fields:[{k:"wetroom_clean", t:"tick", q:"Bowl, seat, floor, curtain, shelf and paper holder clean"}],
+    shots:[{n:"A11 Toilet clean", req:true},
+           {n:"A11 Flush and blade valve", req:true, video:true},
+           {n:"A11 Shower tray and drain clear", req:true, only:"Outrider"},
+           {n:"A11 Bilge pump test", req:true, video:true, only:"Outrider",
+            hint:"Pour about 1 L into the shower drain, pump audible."}] },
+
+  { id:"A12", title:"Water",
+    fields:[{k:"water_ok", t:"tick", q:"Water smells fine, no fuel contamination"},
+            {k:"sink_drains", t:"tick", q:"Sink drains freely"}],
+    shots:[{n:"A12 Tap running and drain, no leak", req:true, video:true}] },
+
+  { id:"A13", title:"12V electrics",
+    fields:[{k:"twelve_volt_ok", t:"tick", q:"12V switches and lights work"},
+            {k:"usb_ok", t:"tick", q:"USB ports work"}],
+    shots:[{n:"A13 12V panel, switches on, voltmeter visible", req:true},
+           {n:"A13 Phone charging from USB", req:true}] },
+
+  { id:"A14", title:"230V electrics",
+    fields:[{k:"power_points_ok", t:"tick", q:"Power points work"},
+            {k:"caravan_inlet_ok", t:"tick", q:"Caravan inlet in good condition"},
+            {k:"heater_230v_ok", t:"tick", q:"230V electric heater checked and working", only:"Explorer"}],
+    shots:[{n:"A14 230V caravan inlet", req:true},
+           {n:"A14 Heater running", req:true, only:"Explorer"}] },
+
+  { id:"A15", title:"Heating appliances", only:"Outrider",
+    fields:[
+      {k:"hot_water_tested", t:"tick", q:"Hot water unit inspected and tested"},
+      {k:"hot_water_charging", t:"tick", q:"Plugged into the rear 12V socket, cable attached, in its storage box, recharging"},
+      {k:"diesel_heater_ok", t:"tick", q:"Diesel heater controller shows no error"},
+      {k:"off_fleet_30d", t:"yesno", q:"Has this van been off fleet 30 days or more?"}
+    ],
+    shots:[{n:"A15 Hot water unit in box, plugged in, charging", req:true},
+           {n:"A15 Diesel heater controller screen", req:true},
+           {n:"A15 Heater at max after 30 min run", video:true, showIf:["off_fleet_30d","Yes"]}] },
+
+  { id:"A16", title:"Kitchen kit and equipment",
+    fields:[{k:"kitchen_kit_ok", t:"tick",
+      q: IS_OUTRIDER ? "All items present, 3 of each, anything damaged replaced"
+                     : "All items present, 4 of each, anything damaged replaced"}],
+    shots:[{n:"A16 Dinnerware and cutlery laid out, count visible", req:true},
+           {n:"A16 Solar shower bag", req:true, only:"Explorer"}] },
+
+  { id:"A17", title:"Consumables",
+    fields:[{k:"consumables_ok", t:"tick", q:"Counts confirmed"}],
+    shots:[{n:"A17 Consumables laid out", req:true,
+            hint:"4 spare gas canisters, 10 toilet sachets, toilet roll, dish soap, sponge."}] },
+
+  { id:"A18", title:"Bedding provided",
+    fields:[{k:"bedding_ok", t:"tick", q:"Every item present, clean and folded"}],
+    shots:[{n:"A18 All bedding laid out on the bed, every item visible", req:true}],
+    shotHint: IS_OUTRIDER
+      ? "Outrider: always a double set and a single set, 3 pillows. Beds are NOT made."
+      : "Explorer: match the bedding sets on the job link above. Beds are NOT made." },
+
+  { id:"A19", title:"Outdoor gear",
+    fields:[{k:"outdoor_gear_ok", t:"tick",
+      q: IS_OUTRIDER ? "Table and 3 chairs opened, cleaned and tested"
+                     : "Table and 4 chairs opened, cleaned and tested"}],
+    shots:[{n:"A19 Table and chairs opened", req:true},
+           {n:"A19 Stowed in place", req:true,
+            hint: IS_OUTRIDER ? "Table on the garage shelf, bracket locked." : ""}] },
+
+  { id:"A20", title:"Safety and accessories",
+    fields:[
+      {k:"first_aid_hivis", t:"tick", q:"First aid kit and hi-vis present"},
+      {k:"accessory_refs", t:"text", q:"Accessory reference numbers",
+       hint:"One per accessory, comma separated. BS01 booster, CS01 car seat, SC01 chains. Ops uses these to track where each item is."}
+    ],
+    shots:[{n:"A20 First aid kit and hi-vis", req:true},
+           {n:"A20 Accessory, reference visible", req:true}],
+    shotHint: IS_OUTRIDER ? "Chains must be the Outrider set, never HiAce chains." : "" },
+
+  { id:"A21", title:"Grey water",
+    fields:[{k:"grey_emptied", t:"tick", q:"Grey tank emptied and flushed"}],
+    shots:[{n:"A21 Grey valve closed", req:true,
+            hint: IS_OUTRIDER ? "Service door, blue lever OFF." : "Underbody valve."}] },
+
+  { id:"A22", title:"Fresh water and flush",
+    fields:[{k:"fresh_tank_full", t:"tick", q:"Fresh tank full"},
+            {k:"flush_cistern_full", t:"tick", q:"Flush cistern full"}],
+    shots:[{n:"A22 Level indicator", req:true, only:"Explorer"},
+           {n:"A22 Gauge test", req:true, video:true, only:"Outrider",
+            hint:"Hold the silver button 5 seconds until the needle settles. Or shoot the overflow running."}] },
+
+  { id:"A23", title:"Hoses and power lead",
+    fields:[{k:"hoses_lead_stowed", t:"tick", q:"All present, and the 230V lead unplugged and stowed"}],
+    shots:[{n:"A23 Hoses, adapters and lead, connectors visible", req:true,
+            hint: IS_OUTRIDER ? "Blue 3 m fresh hose, grey 3 m extension, mains lead."
+                              : "Fresh hose and adapters, waste hose, mains lead."}] },
+
+  { id:"A24", title:"Fuel, odometer and AdBlue",
+    fields:[
+      {k:"odometer", t:"num", q:"Odometer (km)", req:true},
+      {k:"fuel_level", t:"select", q:"Fuel level", opts:["Full","3/4","1/2","1/4","Near empty"]},
+      {k:"adblue", t:"select", q:"AdBlue", opts:["Topped up","Not needed"], only:"Outrider"}
+    ],
+    shots:[{n:"A24 Dashboard, ignition on, odometer and fuel in one shot", req:true},
+           {n:"A24 AdBlue cap area", req:true, only:"Outrider"}] },
+
+  { id:"A25", title:"Mechanical",
+    note:"Tick only if OK. Anything left unticked raises a task, the same as reporting an issue.",
+    fields:[
+      {k:"mech_oil_ok", t:"tick", q:"Oil"},
+      {k:"mech_coolant_ok", t:"tick", q:"Coolant"},
+      {k:"mech_brake_fluid_ok", t:"tick", q:"Brake fluid"},
+      {k:"mech_washer_fluid_ok", t:"tick", q:"Washer fluid"},
+      {k:"mech_tyre_tread_ok", t:"tick", q:"Tyre tread"}
+    ],
+    shots:[{n:"A25 Engine bay, reservoirs visible", req:true},
+           {n:"A25 Dipstick reading", req:true,
+            hint: IS_OUTRIDER ? "Under the bonnet, yellow pull-ring." : "Under the front passenger seat."}] },
+
+  { id:"A26", title:"Low stock, issues and sign-off",
+    fields:[
+      {k:"low_stock", t:"yesno", q:"Anything low on stock?"},
+      {k:"low_stock_items", t:"area", q:"If yes, list what is low", showIf:["low_stock","Yes"]},
+      {k:"any_issue", t:"yesno", q:"Any issue with the van?"},
+      {k:"issue_details", t:"area", q:"If there is an issue, describe it", showIf:["any_issue","Yes"]},
+      {k:"anything_else", t:"area", q:"Anything else worth telling Ops?"},
+      {k:"signed", t:"sig", q:"Sign off"}
+    ],
+    shots:[{n:"A26 Issue evidence", showIf:["any_issue","Yes"]},
+           {n:"A26 Issue evidence 2", showIf:["any_issue","Yes"]}] }
+  ];
+
+  // ---- FORM B: the exterior wash, done near pick-up ----------------------
+  // Four slides, nine shots. Same renderer, same endpoints, same meanings --
+  // "noticed anything" maps to any_issue so it raises the issue task that is
+  // already proven, rather than inventing a second path for the same thing.
+  var SPEC_B = [
+  { id:"B1", title:"Job and vehicle",
+    fields:[
+      {k:"operator_name", t:"text", q:"Your name", req:true},
+      {k:"grooming_team", t:"select", q:"Grooming team",
+       opts:["Auckland Grooming Team","Christchurch Grooming Team","Queenstown Grooming Team"]},
+      {k:"fleet_number", t:"text", q:"Fleet number",
+       hint:"Filled from the job link. Only type it if you opened this form directly."},
+      {k:"is_this_the_van", t:"yesno", q:"Is this the van on your job?"}
+    ],
+    shots:[{n:"B1 Rear number plate", req:true}] },
+
+  { id:"B2", title:"Body, windows and wheels",
+    fields:[
+      {k:"wash_sides_windows", t:"tick", q:"Sides and windows washed"},
+      {k:"wash_mirrors", t:"tick", q:"Wing mirrors cleaned"},
+      {k:"wash_headlights", t:"tick", q:"Headlights polished"},
+      {k:"wash_fuel_cap", t:"tick", q:"Fuel cap area cleaned"},
+      {k:"wash_plate", t:"tick", q:"Number plate clean and readable"},
+      {k:"wash_underbody_wheels", t:"tick", q:"Underbody and wheels washed"},
+      {k:"wash_tyre_shine", t:"tick", q:"Tyre shine applied"}
+    ],
+    shots:[{n:"B2 Front-left corner", req:true},{n:"B2 Front-right corner", req:true},
+           {n:"B2 Rear-left corner", req:true},{n:"B2 Rear-right corner", req:true},
+           {n:"B2 One wheel close-up", req:true}],
+    shotHint:"Four corners, then one wheel close enough to see the finish." },
+
+  { id:"B3", title:"Roof",
+    fields:[{k:"wash_roof", t:"tick", q:"Roof and solar panel washed"}],
+    shots:[{n:"B3 Roof front half", req:true},{n:"B3 Roof rear half", req:true}] },
+
+  { id:"B4", title:"Sign-off",
+    fields:[
+      {k:"any_issue", t:"yesno", q:"Noticed anything during the wash?",
+       hint:"Chips, dents, anything the inside check would not have caught."},
+      {k:"issue_details", t:"area", q:"If yes, describe it", showIf:["any_issue","Yes"]},
+      {k:"signed", t:"sig", q:"Sign off"}
+    ],
+    shots:[{n:"B4 Issue evidence", showIf:["any_issue","Yes"]}] }
+  ];
+
+  var FORM_ID = (q.get("form") || "A").toUpperCase() === "B" ? "B" : "A";
+  var SPEC = FORM_ID === "B" ? SPEC_B : SPEC_A;
+
+  if (FORM_ID === "B"){
+    document.querySelector("h1").textContent = "Exterior Wash";
+    document.querySelector(".sub").textContent =
+      "Form B — exterior wash. Done near pick-up.";
+  }
+
+  // ---- render -------------------------------------------------------------
+  var form = $("f");
+  var required = 0, uploaded = 0;
+  var evidence = {};
+  var conditional = [];   // [{node, dependsOn, equals, shot}]
+
+  // ---- draft save ---------------------------------------------------------
+  // Fifty photos is a 30-45 minute job. A locked phone, a dropped connection
+  // or a stray back-swipe must not cost the groomer the lot. Answers and the
+  // urls of photos already uploaded are kept per job; the photos themselves
+  // are not stored, because they are already safe on the CDN and the thumbnails
+  // restore straight from there.
+  //
+  // Storage can be absent or throw (private window, blocked site data), so
+  // every call is wrapped and the form works identically without it.
+  // Keyed by form as well as job: Form A and Form B on the same van are two
+  // separate pieces of work and must not overwrite one another's draft.
+  var DRAFT_KEY = "prehire:" + FORM_ID + ":" + (JOB.job_id || JOB.fleet || "nolink");
+
+  function readDraft(){
+    try { return JSON.parse(localStorage.getItem(DRAFT_KEY) || "null"); }
+    catch (e) { return null; }
+  }
+  function writeDraft(obj){
+    try { localStorage.setItem(DRAFT_KEY, JSON.stringify(obj)); } catch (e) {}
+  }
+  function clearDraft(){
+    try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+  }
+
+  // One id per form session, not per tap. It survives a reload, so the handler
+  // can recognise a repeat submission as the same one.
+  var saved = readDraft();
+  var SUBMISSION_ID = (saved && saved.id) || ("FORM-" + Date.now() + "-" +
+                      Math.random().toString(36).slice(2, 8));
+
+  var saveTimer = null;
+  function doSave(){
+    var a = {};
+    try { new FormData(form).forEach(function(v,k){ a[k] = v; }); } catch (e) { return; }
+    writeDraft({ id: SUBMISSION_ID, at: Date.now(), answers: a, evidence: evidence });
+  }
+  // Typing is debounced so it does not thrash storage. An upload is NOT:
+  // the photo is the expensive thing the groomer just did, and a tab closed
+  // in the debounce window would throw it away.
+  function saveDraft(){ clearTimeout(saveTimer); saveTimer = setTimeout(doSave, 400); }
+  function saveDraftNow(){ clearTimeout(saveTimer); doSave(); }
+
+  function modelOk(o){
+    if (!o.only) return true;
+    return o.only === "Outrider" ? IS_OUTRIDER : IS_EXPLORER;
+  }
+
+  SPEC.forEach(function(slide){
+    if (!modelOk(slide)) return;
+    var sec = el("section");
+    sec.appendChild(el("h2", null, '<span class="n">'+slide.id+'</span> &middot; '+slide.title));
+    if (slide.note) sec.appendChild(el("p","hint",slide.note));
+
+    slide.fields.filter(modelOk).forEach(function(fd){
+      var box = el("div","f");
+      box.dataset.field = fd.k;
+      if (fd.t !== "tick") box.appendChild(el("label","q", fd.q + (fd.req?' <span class="req">*</span>':"")));
+      if (fd.hint) box.appendChild(el("p","hint"+(fd.strong?" strong":""), fd.hint));
+
+      if (fd.t === "text" || fd.t === "num"){
+        var i = el("input"); i.type = "text"; i.name = fd.k; i.id = fd.k;
+        if (fd.t === "num") i.inputMode = "decimal";
+        box.appendChild(i);
+        if (fd.k === "house_battery_voltage"){
+          var warn = el("div"); warn.id = "battWarn"; box.appendChild(warn);
+          i.addEventListener("input", function(){
+            var v = parseFloat(this.value.replace(/[^0-9.]/g,""));
+            warn.innerHTML = (!isNaN(v) && v < 12.2)
+              ? '<div class="flag warn" style="margin-top:9px">'+v.toFixed(1)+
+                ' V is below 12.2 V. This will raise a task for Ops.</div>' : "";
+          });
+        }
+      } else if (fd.t === "area"){
+        var ta = el("textarea"); ta.name = fd.k; ta.id = fd.k; box.appendChild(ta);
+      } else if (fd.t === "select"){
+        var s = el("select"); s.name = fd.k; s.id = fd.k;
+        s.appendChild(el("option",null,"Select…"));
+        fd.opts.forEach(function(o){ var op = el("option",null,o); op.value = o; s.appendChild(op); });
+        box.appendChild(s);
+      } else if (fd.t === "yesno"){
+        var yn = el("div","yn");
+        ["Yes","No"].forEach(function(v){
+          var l = el("label"); l.innerHTML = '<input type="radio" name="'+fd.k+'" value="'+v+'">'+v;
+          l.querySelector("input").addEventListener("change", refreshConditionals);
+          yn.appendChild(l);
+        });
+        box.appendChild(yn);
+      } else if (fd.t === "tick"){
+        var l2 = el("label","tick");
+        l2.innerHTML = '<input type="checkbox" name="'+fd.k+'" value="on"><span>'+fd.q+'</span>';
+        box.appendChild(l2);
+      } else if (fd.t === "sig"){
+        box.appendChild(buildSig());
+      }
+
+      if (fd.showIf){ box.style.display = "none"; conditional.push({node:box, on:fd.showIf[0], eq:fd.showIf[1]}); }
+      sec.appendChild(box);
+    });
+
+    var shots = slide.shots.filter(modelOk);
+    if (shots.length){
+      var sbox = el("div","f");
+      sbox.appendChild(el("label","q","Evidence"));
+      if (slide.shotHint) sbox.appendChild(el("p","hint", slide.shotHint));
+      var grid = el("div","shots");
+      shots.forEach(function(sh){
+        var d = buildShot(sh);
+        grid.appendChild(d);
+        if (sh.showIf){ d.style.display = "none"; conditional.push({node:d, on:sh.showIf[0], eq:sh.showIf[1], shot:sh}); }
+        else if (sh.req) required++;
+      });
+      sbox.appendChild(grid);
+      sec.appendChild(sbox);
+    }
+    form.appendChild(sec);
+  });
+
+  function buildShot(sh){
+    var d = el("div","shot");
+    d.dataset.slot = sh.n;
+    // Required-ness lives on the element, not in the caption markup: marking a
+    // slot "Uploaded" rewrites the caption and would take the marker with it.
+    d.dataset.req = sh.req ? "1" : "";
+    d.innerHTML = '<div class="ph">+</div><div class="cap"><span>'+
+      sh.n.replace(/^A\d+\s/,"") + (sh.req?' <span class="req">*</span>':"") +
+      (sh.hint?'<br><span style="opacity:.75">'+sh.hint+'</span>':"") +
+      '</span></div><input type="file" accept="image/*" capture="environment">';
+    if (sh.video) d.appendChild(el("div","vid","VIDEO"));
+    d.querySelector("input").addEventListener("change", function(ev){
+      var file = ev.target.files && ev.target.files[0];
+      if (file) handle(d, sh, file);
+    });
+    return d;
+  }
+
+  function refreshConditionals(){
+    conditional.forEach(function(c){
+      var picked = document.querySelector('input[name="'+c.on+'"]:checked');
+      var on = picked && picked.value === c.eq;
+      var was = c.node.style.display !== "none";
+      c.node.style.display = on ? "" : "none";
+      // A conditional shot only counts toward the total while it is showing.
+      if (c.shot && c.shot.req && on !== was){
+        required += on ? 1 : -1;
+        tally();
+      }
+    });
+  }
+
+  function tally(){
+    $("pcount").textContent = uploaded + " / " + required + " required photos";
+    $("pbar").style.width = (required ? Math.min(100, uploaded/required*100) : 0) + "%";
+  }
+  tally();
+
+  // ---- resize in the browser ---------------------------------------------
+  // A phone photo is 3-15 MB. Fifty of those is most of a gigabyte, which no
+  // depot wifi will carry. Resizing here is what makes the form usable.
+  function shrink(file){
+    return new Promise(function(resolve, reject){
+      var img = new Image(), url = URL.createObjectURL(file);
+      img.onload = function(){
+        var w = img.width, h = img.height, scale = Math.min(1, MAX_EDGE/Math.max(w,h));
+        var c = el("canvas");
+        c.width = Math.round(w*scale); c.height = Math.round(h*scale);
+        c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+        URL.revokeObjectURL(url);
+        var du = c.toDataURL("image/jpeg", JPEG_Q);
+        resolve({ dataUrl: du, base64: du.split(",")[1] });
+      };
+      img.onerror = function(){ URL.revokeObjectURL(url); reject(new Error("could not read that image")); };
+      img.src = url;
+    });
+  }
+
+  function cap(d, text){ d.querySelector(".cap span").innerHTML = text; }
+
+  function handle(d, sh, file){
+    var wasDone = d.classList.contains("done");
+    d.classList.remove("failed");
+    cap(d, "Resizing…");
+    shrink(file).then(function(out){
+      var ph = d.querySelector(".ph");
+      if (ph){ var im = el("img","thumb"); im.src = out.dataUrl; d.replaceChild(im, ph); }
+      else { d.querySelector(".thumb").src = out.dataUrl; }
+      var kb = Math.round(out.base64.length*0.75/1024);
+      var tag = d.querySelector(".sz") || el("div","sz");
+      tag.className = "sz"; tag.textContent = kb + " KB";
+      if (!tag.parentNode) d.appendChild(tag);
+      cap(d, "Uploading…");
+      return fetch(PHOTO_ENDPOINT, {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({
+          job_id: JOB.job_id, fleet: JOB.fleet || (($("fleet_number")||{}).value) || "",
+          exp: JOB.exp, t: JOB.t, slot: sh.n,
+          mimeType:"image/jpeg", dataBase64: out.base64
+        })
+      });
+    }).then(function(r){ return r.json(); }).then(function(res){
+      if (res && res.ok && res.url){
+        evidence[sh.n] = res.url;
+        d.classList.add("done"); cap(d,"Uploaded");
+        if (sh.req && !wasDone){ uploaded++; tally(); }
+        saveDraftNow();
+      } else {
+        throw new Error((res && (res.reason || (res.problems||[])[0])) || "upload refused");
+      }
+    }).catch(function(e){
+      d.classList.add("failed"); d.classList.remove("done");
+      cap(d, "Failed — tap to retry");
+      if (sh.req && wasDone){ uploaded--; tally(); }
+    });
+  }
+
+  // ---- signature ----------------------------------------------------------
+  function buildSig(){
+    var wrap = el("div"); wrap.id = "sigwrap";
+    var c = el("canvas"); c.id = "sig";
+    var bar = el("div","sigbar");
+    bar.innerHTML = "<span>Sign with your finger</span>";
+    var clr = el("button",null,"Clear"); clr.type = "button";
+    bar.appendChild(clr); wrap.appendChild(c); wrap.appendChild(bar);
+
+    var drawn = false, drawing = false, ctx;
+    function size(){
+      var r = c.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+      c.width = r.width*dpr; c.height = 150*dpr;
+      ctx = c.getContext("2d"); ctx.scale(dpr,dpr);
+      ctx.lineWidth = 2.2; ctx.lineCap = "round"; ctx.lineJoin = "round";
+      ctx.strokeStyle = getComputedStyle(document.body).color;
+    }
+    setTimeout(size, 0);
+    window.addEventListener("resize", function(){ if(!drawn) size(); });
+
+    function pos(e){
+      var r = c.getBoundingClientRect();
+      var p = e.touches ? e.touches[0] : e;
+      return [p.clientX - r.left, p.clientY - r.top];
+    }
+    function start(e){ e.preventDefault(); drawing = true; var p = pos(e); ctx.beginPath(); ctx.moveTo(p[0],p[1]); }
+    function move(e){ if(!drawing) return; e.preventDefault(); var p = pos(e); ctx.lineTo(p[0],p[1]); ctx.stroke(); drawn = true; }
+    function end(){ drawing = false; }
+    ["mousedown","touchstart"].forEach(function(t){ c.addEventListener(t,start,{passive:false}); });
+    ["mousemove","touchmove"].forEach(function(t){ c.addEventListener(t,move,{passive:false}); });
+    ["mouseup","mouseleave","touchend"].forEach(function(t){ c.addEventListener(t,end); });
+    clr.addEventListener("click", function(){ ctx.clearRect(0,0,c.width,c.height); drawn = false; });
+
+    wrap.hasSignature = function(){ return drawn; };
+    wrap.dataUrl = function(){ return drawn ? c.toDataURL("image/png") : ""; };
+    window.__sig = wrap;
+    return wrap;
+  }
+
+  // ---- submit -------------------------------------------------------------
+  $("submit").addEventListener("click", function(){
+    var btn = $("submit"), out = $("result");
+    var answers = {};
+    new FormData(form).forEach(function(v,k){ answers[k] = v; });
+    // Unticked boxes do not appear in FormData, but "not ticked" is the whole
+    // point of A25 -- send them as empty so the handler can see them.
+    SPEC.forEach(function(s){ if(!modelOk(s)) return;
+      s.fields.filter(modelOk).forEach(function(fd){
+        if (fd.t === "tick" && !(fd.k in answers)) answers[fd.k] = "";
+      });
+    });
+    if (!answers.fleet_number && JOB.fleet) answers.fleet_number = JOB.fleet;
+
+    var sig = window.__sig;
+    if (!sig || !sig.hasSignature()){
+      out.innerHTML = '<div class="flag warn">Sign off at the bottom before submitting.</div>';
+      out.scrollIntoView({behavior:"smooth",block:"nearest"});
+      return;
+    }
+    answers.signed = "signed";
+
+    var pending = '<div class="flag ok"><strong>Sending…</strong> building the job card and raising tasks.</div>';
+    if (uploaded < required){
+      pending += '<div class="flag warn" style="margin-top:10px">Sent with '+(required-uploaded)+
+        ' required photo(s) missing. The spec is evidence, not ticks — add them when you can.</div>';
+    }
+    out.innerHTML = pending;
+    out.scrollIntoView({behavior:"smooth",block:"nearest"});
+    btn.disabled = true; btn.textContent = "Sending…";
+
+    fetch(SUBMIT_ENDPOINT, {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({
+        id: SUBMISSION_ID, job_id: JOB.job_id, form: FORM_ID,
+        fleet: answers.fleet_number || JOB.fleet || "", model: JOB.model || "",
+        exp: JOB.exp, t: JOB.t,
+        answers: answers, evidence: evidence, signature: sig.dataUrl().slice(0,64) ? "present" : ""
+      })
+    }).then(function(r){ return r.json(); }).then(function(d){
+      btn.disabled = false; btn.textContent = "Submit";
+      if (d && d.refused){
+        out.innerHTML = '<div class="flag bad"><strong>Refused.</strong> '+d.reason+'<br>'+(d.help||"")+'</div>';
+        out.scrollIntoView({behavior:"smooth",block:"nearest"}); return;
+      }
+      clearDraft();   // the job exists now; a reload must not resurrect it
+      var tasks = d.taskTitles || [];
+      var forVan = (d.fleet && d.fleet !== "(unknown)") ? " for " + d.fleet : "";
+      var html = '<div class="flag ok"><strong>Submitted.</strong> ' +
+                 (d.attached
+                   ? 'Filed against your existing grooming job' + forVan + '.'
+                   : 'Job card created in the Vehicle Grooming pipeline' + forVan + '.') +
+                 '</div>';
+      if (d.jobUrl) html += '<p style="margin:10px 0 0"><a href="'+d.jobUrl+'" target="_blank" rel="noopener">Open the job in GoHighLevel</a></p>';
+      html += '<p style="margin:12px 0 0"><strong>'+(d.tasksCreated||0)+'</strong> task(s) raised for Ops'+
+              (tasks.length ? ':</p><ul class="tasklist"><li>'+tasks.join("</li><li>")+"</li></ul>" : ".</p>");
+      var fu = d.fleetUpdates||{}, reads = [];
+      if (fu.last_odometer !== undefined) reads.push("odometer "+fu.last_odometer+" km");
+      if (fu.last_house_battery_voltage !== undefined) reads.push("house battery "+fu.last_house_battery_voltage+" V");
+      if (reads.length) html += '<p style="margin:10px 0 0">Readings captured: '+reads.join(", ")+'.</p>';
+      var n = Object.keys(evidence).length;
+      if (n) html += '<p style="margin:10px 0 0">'+n+' photo(s) filed against this job.</p>';
+      if (d.problems && d.problems.length)
+        html += '<div class="flag bad" style="margin-top:12px">'+d.problems.join("<br>")+'</div>';
+      out.innerHTML = html;
+      out.scrollIntoView({behavior:"smooth",block:"nearest"});
+    }).catch(function(e){
+      btn.disabled = false; btn.textContent = "Submit";
+      out.innerHTML = '<div class="flag bad">Could not reach the handler. '+(e&&e.message?e.message:"")+'</div>';
+    });
+  });
+
+  // ---- restore a draft ----------------------------------------------------
+  function restoreDraft(){
+    var dr = readDraft();
+    if (!dr) return;
+    var restoredAnswers = 0, restoredShots = 0;
+
+    Object.keys(dr.answers || {}).forEach(function(k){
+      var v = dr.answers[k];
+      if (v === "" || v === undefined) return;
+      var radio = form.querySelector('input[type=radio][name="'+k+'"][value="'+v+'"]');
+      if (radio){ radio.checked = true; restoredAnswers++; return; }
+      var check = form.querySelector('input[type=checkbox][name="'+k+'"]');
+      if (check){ check.checked = true; restoredAnswers++; return; }
+      var fld = form.querySelector('[name="'+k+'"]');
+      if (fld){ fld.value = v; restoredAnswers++; }
+    });
+
+    // Photos are already on the CDN, so the thumbnail comes back from there
+    // rather than from storage.
+    Object.keys(dr.evidence || {}).forEach(function(slot){
+      var d = form.querySelector('.shot[data-slot="'+slot.replace(/"/g,'')+'"]');
+      if (!d) return;
+      evidence[slot] = dr.evidence[slot];
+      var ph = d.querySelector(".ph");
+      var im = el("img","thumb"); im.src = dr.evidence[slot];
+      if (ph) d.replaceChild(im, ph); else d.querySelector(".thumb").src = im.src;
+      d.classList.add("done");
+      cap(d, "Uploaded");
+      restoredShots++;
+    });
+
+    refreshConditionals();
+
+    // Recount against what is actually showing and actually done.
+    uploaded = 0;
+    form.querySelectorAll(".shot.done").forEach(function(d){
+      if (d.style.display !== "none" && d.dataset.req === "1") uploaded++;
+    });
+    tally();
+
+    if (restoredAnswers || restoredShots){
+      var when = dr.at ? new Date(dr.at) : null;
+      var note = el("div","flag warn",
+        "<strong>Picked up where you left off.</strong> " + restoredAnswers +
+        " answer(s) and " + restoredShots + " photo(s) restored" +
+        (when ? " from " + when.toLocaleString() : "") +
+        ". Sign off again before submitting.");
+      note.style.margin = "0 0 16px";
+      form.insertAdjacentElement("beforebegin", note);
+    }
+  }
+
+  // Save on every change. Debounced, so typing does not thrash storage.
+  form.addEventListener("input", saveDraft);
+  form.addEventListener("change", saveDraft);
+
+  refreshConditionals();
+  restoreDraft();
+})();
+</script>
+</body>
+</html>
