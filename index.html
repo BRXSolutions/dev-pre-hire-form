@@ -118,6 +118,10 @@ footer{color:var(--ink-3);font-size:12px;text-align:center;padding:22px 0 0;line
   <p class="hint" id="codeHint">Check your email. The code expires in 10 minutes.</p>
   <input type="text" id="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000">
   <button class="go" id="verify" type="button">Sign in</button>
+  <!-- A code is only ever issued to an address set up as a groomer, and the reply is the same
+       either way so the endpoint cannot be used to find out who works here. That silence left
+       Max waiting on 19 Nov for an email that was never coming, so say plainly what it means. -->
+  <p class="hint" id="noCodeHint">No email after a couple of minutes? Then this address is not set up for the grooming portal. Check it is the one Waka Campa has on file for you, or contact support@wakacampa.com and we will set it up.</p>
   <button class="link" id="startOver" type="button">Use a different email</button>
 </section>
 
@@ -179,7 +183,7 @@ footer{color:var(--ink-3);font-size:12px;text-align:center;padding:22px 0 0;line
       if (d.status !== "OK"){ note("warn", esc(d.error || "Could not send a code.")); return; }
       // Deliberately the same answer whether or not the email is on file.
       show("stepEmail", false); show("stepCode", true);
-      $("codeHint").innerHTML = "We sent a code to <b>"+esc(email)+"</b> if that address is on file. It expires in 10 minutes.";
+      $("codeHint").innerHTML = "If <b>"+esc(email)+"</b> is set up as a groomer, a 6-digit code is on its way. It expires in 10 minutes.";
       $("code").focus();
     }).catch(function(e){
       b.disabled = false; b.textContent = "Send me a code";
